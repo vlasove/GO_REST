@@ -13,7 +13,7 @@ type Config struct {
 	Password string `toml:"password"`
 	DBname   string `toml:"dbname"`
 	SSLmode  string `toml:"sslmode"`
-	Port     string `toml:"port"`
+	Port     string `toml:"bind_port"`
 }
 
 var configPath string

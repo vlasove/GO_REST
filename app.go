@@ -45,12 +45,15 @@ func (a *App) getBooks(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) createBook(w http.ResponseWriter, r *http.Request) {
 	var b Book
+	fmt.Println("POST REQUEST STARTED")
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&b); err != nil {
-		log.Fatal(err)
+		RespondError(w, 400, "Invalid JSON")
+		return
 	}
 	if err := b.createBook(a.DB); err != nil {
-		log.Fatal(err)
+		RespondError(w, 500, err.Error())
+		return
 	}
 }
 
