@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -38,9 +39,20 @@ func (a *App) Run(port string) {
 //getBook
 func (a *App) getBook(w http.ResponseWriter, r *http.Request) {}
 
-func (a *App) getBooks(w http.ResponseWriter, r *http.Request) {}
+func (a *App) getBooks(w http.ResponseWriter, r *http.Request) {
 
-func (a *App) createBook(w http.ResponseWriter, r *http.Request) {}
+}
+
+func (a *App) createBook(w http.ResponseWriter, r *http.Request) {
+	var b Book
+	dec := json.NewDecoder(r.Body)
+	if err := dec.Decode(&b); err != nil {
+		log.Fatal(err)
+	}
+	if err := b.createBook(a.DB); err != nil {
+		log.Fatal(err)
+	}
+}
 
 func (a *App) deleteBook(w http.ResponseWriter, r *http.Request) {}
 
@@ -52,4 +64,19 @@ func (a *App) findRoutes() {
 	a.Router.HandleFunc("/books/{id}", a.updateBook).Methods("PUT")
 	a.Router.HandleFunc("/books/{id}", a.deleteBook).Methods("DELETE")
 	a.Router.HandleFunc("/books", a.createBook).Methods("POST")
+}
+
+func RespondError(w http.ResponseWriter, statusCode int, message string) {
+	RespondJSON(w, statusCode, map[string]string{"error": message})
+}
+
+func RespondJSON(w http.ResponseWriter, statusCode int, p interface{}) {
+	resp, err := json.Marshal(p)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	w.Write(resp)
 }
