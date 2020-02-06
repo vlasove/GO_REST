@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -47,3 +49,35 @@ const tableCreationQuery = `CREATE TABLE IF NOT EXISTS books
     price NUMERIC(10,2) NOT NULL DEFAULT 0.00,
     CONSTRAINT books_pkey PRIMARY KEY (id)
 )`
+
+func ExecuteR(req *http.Request) *httptest.ResponseRecorder {
+	rr := httptest.NewRecorder()
+	app.Router.ServeHTTP(rr, req)
+
+	return rr
+}
+
+func StatusCheker(t *testing.T, expect int, origin int) {
+	if expect != origin {
+		t.Error("Expected value of status code does not match origin.")
+	}
+
+}
+
+func TestEmpty(t *testing.T) {
+	clearTable()
+
+	req, err := http.NewRequest("GET", "/books", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resp := ExecuteR(req)
+
+	StatusCheker(t, 404, resp.Code)
+
+	if resp.Body.String() != "[]" {
+		t.Error("Body not empty", resp.Body.String())
+	}
+
+}

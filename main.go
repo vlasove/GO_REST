@@ -26,8 +26,7 @@ func main() {
 	flag.Parse()
 	var conf Config
 	_, err := toml.DecodeFile(configPath, &conf)
-
-	{
+	if err != nil {
 		log.Fatal(err)
 	}
 
