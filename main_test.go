@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -92,4 +94,24 @@ func TestNotExists(t *testing.T) {
 	resp := ExecuteR(req)
 	StatusCheker(t, 404, resp.Code)
 
+}
+
+func TestCreateBook(t *testing.T) {
+	clearTable()
+
+	JSONEntry := "{\"name\":\"my_test\", \"price\" :13.13}"
+
+	req, err := http.NewRequest("POST", "/books", bytes.NewBuffer([]byte(JSONEntry)))
+	if err != nil {
+		log.Fatal(err)
+	}
+	resp := ExecuteR(req)
+	StatusCheker(t, 201, resp.Code)
+
+	myMap := make(map[string]interface{})
+	json.Unmarshal(resp.Body.Bytes(), &myMap)
+
+	if myMap["id"] != float64(1) || myMap["name"] != "my_test" {
+		t.Error("Response and JSON not comparable")
+	}
 }
