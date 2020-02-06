@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 )
 
@@ -20,8 +21,13 @@ func (b *Book) getBook(db *sql.DB) error {
 
 //updateBook
 func (b *Book) updateBook(db *sql.DB) error {
-	_, err := db.Exec("UPDATE books SET name = $1, price = $2  WHERE id = $3", b.Name, b.Price, b.ID)
-	return err
+	var id int
+	db.QueryRow("UPDATE books SET name = $1, price = $2  WHERE id = $3 returning id", b.Name, b.Price, b.ID).Scan(&id)
+	if id != b.ID {
+		b.createBook(db)
+		return errors.New("Book with this id not found. Successfully created new!")
+	}
+	return nil
 }
 
 //createBook
@@ -39,8 +45,12 @@ func (b *Book) createBook(db *sql.DB) error {
 
 //deleteBook
 func (b *Book) deleteBook(db *sql.DB) error {
-	_, err := db.Exec("DELETE FROM books WHERE id = $1", b.ID)
-	return err
+	var id int
+	db.QueryRow("DELETE FROM books WHERE id = $1 returning id", b.ID).Scan(&id)
+	if id != b.ID {
+		return errors.New("Object not found")
+	}
+	return nil
 }
 
 //getBooks ...

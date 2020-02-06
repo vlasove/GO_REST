@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 
 	"net/http"
 
@@ -37,9 +38,32 @@ func (a *App) Run(port string) {
 }
 
 //getBook
-func (a *App) getBook(w http.ResponseWriter, r *http.Request) {}
+func (a *App) getBook(w http.ResponseWriter, r *http.Request) {
+	var b Book
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		RespondError(w, 400, "Invalid ID")
+		return
+	}
+
+	b.ID = id
+	if err := b.getBook(a.DB); err != nil {
+		RespondError(w, 404, "Can not be found in DB")
+		return
+	}
+
+	RespondJSON(w, 200, b)
+}
 
 func (a *App) getBooks(w http.ResponseWriter, r *http.Request) {
+
+	booksSlice, err := getBooks(a.DB)
+	if err != nil {
+		RespondError(w, 500, "BAD REQUEST")
+		return
+	}
+	RespondJSON(w, 200, booksSlice)
 
 }
 
@@ -60,9 +84,45 @@ func (a *App) createBook(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a *App) deleteBook(w http.ResponseWriter, r *http.Request) {}
+func (a *App) deleteBook(w http.ResponseWriter, r *http.Request) {
+	var b Book
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		RespondError(w, 400, "Invalid ID")
+		return
+	}
 
-func (a *App) updateBook(w http.ResponseWriter, r *http.Request) {}
+	b.ID = id
+	if err := b.deleteBook(a.DB); err != nil {
+		RespondError(w, 404, "Can not be found in DB")
+		return
+	}
+
+	RespondJSON(w, 200, map[string]string{"message": "successfull deleted"})
+}
+
+func (a *App) updateBook(w http.ResponseWriter, r *http.Request) {
+	var b Book
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		RespondError(w, 400, "Invalid ID")
+		return
+	}
+
+	dec := json.NewDecoder(r.Body)
+	_ = dec.Decode(&b)
+
+	b.ID = id
+	if err := b.updateBook(a.DB); err != nil {
+		RespondError(w, 201, err.Error())
+		return
+	}
+
+	RespondJSON(w, 200, map[string]string{"message": "successfull "})
+
+}
 
 func (a *App) findRoutes() {
 	a.Router.HandleFunc("/books", a.getBooks).Methods("GET")
