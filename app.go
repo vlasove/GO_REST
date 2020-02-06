@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 
+	"net/http"
+
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
@@ -25,7 +27,29 @@ func (a *App) Initialize(user, password, dbname, sslmode string) {
 	}
 
 	a.Router = mux.NewRouter()
+	a.findRoutes()
 }
 
 // Run ...
-func (a *App) Run(port string) {}
+func (a *App) Run(port string) {
+	log.Fatal(http.ListenAndServe(port, a.Router))
+}
+
+//getBook
+func (a *App) getBook(w http.ResponseWriter, r *http.Request) {}
+
+func (a *App) getBooks(w http.ResponseWriter, r *http.Request) {}
+
+func (a *App) createBook(w http.ResponseWriter, r *http.Request) {}
+
+func (a *App) deleteBook(w http.ResponseWriter, r *http.Request) {}
+
+func (a *App) updateBook(w http.ResponseWriter, r *http.Request) {}
+
+func (a *App) findRoutes() {
+	a.Router.HandleFunc("/books", a.getBooks).Methods("GET")
+	a.Router.HandleFunc("/books/{id}", a.getBook).Methods("GET")
+	a.Router.HandleFunc("/books/{id}", a.updateBook).Methods("PUT")
+	a.Router.HandleFunc("/books/{id}", a.deleteBook).Methods("DELETE")
+	a.Router.HandleFunc("/books", a.createBook).Methods("POST")
+}
