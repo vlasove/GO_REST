@@ -74,10 +74,22 @@ func TestEmpty(t *testing.T) {
 
 	resp := ExecuteR(req)
 
-	StatusCheker(t, 404, resp.Code)
+	StatusCheker(t, 200, resp.Code)
 
 	if resp.Body.String() != "[]" {
 		t.Error("Body not empty", resp.Body.String())
 	}
+
+}
+
+func TestNotExists(t *testing.T) {
+	clearTable()
+	req, err := http.NewRequest("GET", "/books/11", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resp := ExecuteR(req)
+	StatusCheker(t, 404, resp.Code)
 
 }
