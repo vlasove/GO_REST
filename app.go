@@ -48,9 +48,12 @@ func (a *App) createBook(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST REQUEST STARTED")
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&b); err != nil {
-		RespondError(w, 400, "Invalid JSON")
+		RespondError(w, http.StatusBadRequest, "Invalid JSON")
 		return
 	}
+
+	defer r.Body.Close()
+
 	if err := b.createBook(a.DB); err != nil {
 		RespondError(w, 500, err.Error())
 		return

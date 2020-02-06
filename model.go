@@ -26,8 +26,15 @@ func (b *Book) updateBook(db *sql.DB) error {
 
 //createBook
 func (b *Book) createBook(db *sql.DB) error {
-	_, err := db.Exec("INSERT INTO books (name, price) VALUES ($1, $2)", b.Name, b.Price)
-	return err
+
+	err := db.QueryRow(
+		"INSERT INTO books(name, price) VALUES($1, $2) RETURNING id",
+		b.Name, b.Price).Scan(&b.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
 
 //deleteBook
