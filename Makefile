@@ -2,15 +2,13 @@ run:
 	go run main.go 
 
 build:
-	go build 
+	go build  -v restapi
 
 test:
 	go test -v -cover
+	
 
-build2:
-	go build  -v restapi
-
-.DEFAULT_GOAL := build2
+.DEFAULT_GOAL := build
 
 
 
