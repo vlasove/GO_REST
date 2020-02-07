@@ -22,7 +22,7 @@ type App struct {
 	DB     *sql.DB
 }
 
-var mySigningKey = []byte("secret")
+var mySigningKey = []byte("supersecret")
 
 // Initialize ...
 func (a *App) Initialize(user, password, dbname, sslmode string) {
@@ -142,7 +142,7 @@ func (a *App) GetToken(w http.ResponseWriter, r *http.Request) {
 	// Устанавливаем набор параметров для токена
 	claims := make(jwt.MapClaims)
 	claims["admin"] = true
-	claims["name"] = "kek"
+	claims["name"] = "specialist"
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 	token.Claims = claims
 
