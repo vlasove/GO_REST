@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/dgrijalva/jwt-go"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -8,6 +9,9 @@ import (
 	"strconv"
 
 	"net/http"
+
+	_ "github.com/auth0/go-jwt-middleware"
+	_ "github.com/drijalva/jwt-go"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -18,6 +22,8 @@ type App struct {
 	Router *mux.Router
 	DB     *sql.DB
 }
+
+var mySignigKey = []byte("helloFromMe")
 
 // Initialize ...
 func (a *App) Initialize(user, password, dbname, sslmode string) {
@@ -124,12 +130,38 @@ func (a *App) updateBook(w http.ResponseWriter, r *http.Request) {
 
 }
 
+var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
+	ValidationKeyGetter: func (token *jwt.Token) (intrface{}, error) {
+		return mySigningKey, nil
+	},
+	SigningMethod: jwt.SigningMethodHS256,
+})
+
+func (a *App) getToken(w http.ResponseWriter, r *http.Request){
+	token := jwt.New(jwt.SigningMethodHS256)
+
+	claims := make(jwt.MapClaims)
+	claims["exp"] = time.Now().Add(time.Hour * 2).Unix()
+	claims["admin"] = true
+	claims["name"] = "BobJack"
+	token.Claims = claims
+
+	tokenString, err := token.SignedString(mySigningKey)
+	if err != {
+		log.Fatal(err)
+	}
+
+	w.Write([]byte(tokenString))
+}
+
+
 func (a *App) findRoutes() {
-	a.Router.HandleFunc("/books", a.getBooks).Methods("GET")
+	a.Router.Handle("/books", jwtMiddleware.Handler(http.HandleFunc(a.getBooks))).Methods("GET")
 	a.Router.HandleFunc("/books/{id}", a.getBook).Methods("GET")
 	a.Router.HandleFunc("/books/{id}", a.updateBook).Methods("PUT")
 	a.Router.HandleFunc("/books/{id}", a.deleteBook).Methods("DELETE")
 	a.Router.HandleFunc("/books", a.createBook).Methods("POST")
+	a.Router.HandleFunc("/token", a.getToken).Methods("GET")
 }
 
 func RespondError(w http.ResponseWriter, statusCode int, message string) {

@@ -2,7 +2,7 @@ run:
 	go run main.go 
 
 build:
-	go build  -v restapi
+	go build  -v
 
 test:
 	go test -v -coverprofile=c.out
